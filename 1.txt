@@ -1,0 +1,137 @@
+
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+import pickle
+
+pandas as pd: Used for data manipulation and analysis. In this script, it's used to load and preprocess the dataset.
+numpy as np: A library for numerical operations. Though not explicitly used here, it provides mathematical functionality if needed.
+train_test_split: Splits data into training and testing sets to evaluate the model’s performance without bias.
+StandardScaler: Standardizes features (scales them to a mean of 0 and variance of 1) to ensure that all features contribute equally to the model.
+RandomForestClassifier: Implements the Random Forest algorithm, an ensemble learning method for classification tasks.
+accuracy_score: Evaluates the model by calculating the proportion of correctly predicted labels.
+pickle: Used to save and load Python objects, such as the trained model and scaler, for reuse.
+
+Loading the Dataset
+
+df = pd.read_csv("disease_data.csv")
+
+pd.read_csv("disease_data.csv"): Reads a CSV file named disease_data.csv into a pandas DataFrame.
+
+DataFrame: A table-like data structure with rows and columns, where each column represents a variable (e.g., gender, age) and each row is an observation.
+
+Preprocessing the Data
+
+Dropping Missing Values
+
+df = df.dropna()
+dropna(): Removes rows with missing (NaN) values, ensuring that only complete records are used for training and evaluation.
+
+
+Encoding Categorical Variables
+
+df['gender'] = df['gender'].map({'Male': 0, 'Female': 1})
+df['smoking_history'] = df['smoking_history'].map({'Never smoked': 0, 'Formerly smoked': 1, 'Currently smoking': 2})
+df['gender']: Encodes the gender column as numeric:
+
+Male → 0
+Female → 1
+df['smoking_history']: Encodes smoking_history into numeric categories:
+
+Never smoked → 0
+Formerly smoked → 1
+Currently smoking → 2
+Why? Machine learning models work better with numerical input rather than strings or categories.
+
+
+Selecting Features and Target
+
+X = df[['gender', 'age', 'hypertension', 'heart_disease', 'smoking_history', 'bmi', 'HbA1c_level', 'blood_glucose_level']]
+y = df['diabetes']
+
+X: Independent variables (features) used by the model to make predictions.
+
+Includes variables like gender, age, hypertension, bmi, etc.
+y: Dependent variable (target) that the model is predicting.
+
+Here, diabetes is the target variable, indicating whether the person has diabetes (1) or not (0).
+
+
+Splitting the Data
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+train_test_split: Divides the dataset into training and testing subsets:
+
+X_train and y_train: Training data used to train the model.
+X_test and y_test: Testing data used to evaluate the model.
+test_size=0.2: Reserves 20% of the data for testing and 80% for training.
+random_state=42: Ensures reproducibility by using a fixed random seed.
+
+Feature Scaling
+
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+StandardScaler: Normalizes features by centering (mean = 0) and scaling to unit variance.
+
+This ensures features with different ranges (e.g., age vs. bmi) are treated equally during training.
+fit_transform:
+fit: Calculates scaling parameters (mean and standard deviation) from X_train.
+transform: Applies the scaling to X_train.
+transform: Applies the same scaling to X_test using parameters derived from X_train. This ensures consistent scaling across datasets.
+
+Training the Model
+
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train_scaled, y_train)
+
+RandomForestClassifier: Implements the Random Forest algorithm:
+
+n_estimators=100: Specifies the number of trees in the forest (more trees improve accuracy but increase computation time).
+random_state=42: Ensures consistent results.
+fit: Trains the model using scaled training features (X_train_scaled) and their corresponding labels (y_train).
+
+Making Predictions and Evaluating Accuracy
+
+y_pred = model.predict(X_test_scaled)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Model accuracy: {accuracy * 100:.2f}%")
+ 
+predict: Uses the trained model to predict labels (y_pred) for the test data (X_test_scaled).
+accuracy_score: Compares predicted labels (y_pred) to actual labels (y_test) to compute accuracy as:
+Accuracy
+=
+Number of Correct Predictions/
+Total Predictions
+
+print: Displays the model’s accuracy as a percentage.
+
+Saving the Model and Scaler
+
+with open("model.pkl", "wb") as model_file:
+    pickle.dump(model, model_file)
+
+with open("scaler.pkl", "wb") as scaler_file:
+    pickle.dump(scaler, scaler_file)
+Saving the Model:
+
+pickle.dump: Serializes the trained model into a file named model.pkl.
+wb: Opens the file in write-binary mode for efficient storage.
+Saving the Scaler:
+
+Similarly, saves the fitted scaler object into scaler.pkl.
+These files can be loaded later to make predictions on new data without retraining the model.
+
+
+
+Conclusion
+This script creates a pipeline for:
+
+Loading and preprocessing the data.
+Training a machine learning model (Random Forest) to predict diabetes.
+Evaluating the model’s performance.
+Saving the trained model and scaler for future use.
+Each step ensures that the model generalizes well to unseen data and can be reused efficiently.
