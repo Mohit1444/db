@@ -58,6 +58,3 @@ def predict_disease():
 # Trigger prediction when button is clicked
 if predict_button:
     predict_disease()
-
-
-# jai mata di
